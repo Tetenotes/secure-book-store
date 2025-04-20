@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart - Online Bookstore</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+    }
+
+    header {
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #ccc;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    .btn {
+      background: #28a745;
+      color: #fff;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Your Cart</h1>
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('checkout') }}">Checkout</a>
+    </nav>
+  </header>
+  <div class="container">
+    {% if cart_items %}
+    <table>
+      <tr>
+        <th>Book Title</th>
+        <th>Price</th>
+        <th>Quantity</th>
+      </tr>
+      {% for cart, product in cart_items %}
+      <tr>
+        <td>{{ product.title }}</td>
+        <td>${{ product.price }}</td>
+        <td>{{ cart.quantity }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p>Your cart is empty.</p>
+    {% endif %}
+  </div>
+</body>
+
+</html>
