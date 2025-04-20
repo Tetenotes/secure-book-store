@@ -49,8 +49,7 @@ class Cart(db.Model):
 # ------------------#
 @app.route('/')
 def index():
-    products = Product.query.all()
-    return render_template('index.html', products=products)
+    return redirect(url_for('login'))  # Redirect to login page immediately
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -149,6 +148,7 @@ def checkout():
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('checkout.html')
+
 if __name__ == '__main__':
     with app.app_context():
         # If the database doesn't exist, create it and add sample books
