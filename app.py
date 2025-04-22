@@ -25,19 +25,28 @@ mail = Mail(app)
 
 @app.after_request
 def apply_security_headers(response):
-    # Content Security Policy (CSP) - Controls resource loading
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none'; style-src 'self' 'unsafe-inline';"
-    
+    # Content Security Policy (CSP) - Controls resource loading from self and trusted external sources.
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "  # Allow resources from the same origin by default
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "  # Allow external scripts from CDN
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "  # Allow external styles from CDN
+        "img-src 'self' https://m.media-amazon.com https://images-na.ssl-images-amazon.com; "  # Allow images from specific external sources
+        "frame-src 'self'; "  # Allow iframes from the same origin (change if external sources are needed)
+        "object-src 'none'; "  # Block all objects to prevent XSS attacks
+        "font-src 'self' https://cdnjs.cloudflare.com;"  # Allow fonts from external CDN
+    )
+
     # X-Frame-Options - Prevent clickjacking
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    
+
     # MIME Type Sniffing - Prevent MIME type confusion
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    
+
     # Secure Cookie Flag - Ensures cookies are only sent over HTTPS
     response.headers['Set-Cookie'] = 'Secure; HttpOnly'
-    
+
     return response
+
 
 # Database Models   #
 class User(db.Model):
