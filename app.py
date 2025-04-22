@@ -228,10 +228,11 @@ def payment_cancelled():
 
 @app.route('/pdfs/<path:filename>')
 def serve_pdf(filename):
-    pdf_directory = os.path.join(app.root_path, 'templates', 'PDF')
+    pdf_directory = os.path.join(app.root_path, 'static', 'PDF')
     response = send_from_directory(pdf_directory, filename, mimetype='application/pdf')
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'  # allow iframe
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     return response
+
 
 if __name__ == '__main__':
     with app.app_context():
