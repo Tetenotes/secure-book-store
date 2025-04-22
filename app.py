@@ -22,31 +22,30 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'd.srujana2024@gmail.com'
 app.config['MAIL_PASSWORD'] = 'qeul pckw vxop amhs '
 mail = Mail(app)
-
 @app.after_request
 def apply_security_headers(response):
-    # Content Security Policy (CSP) - Controls resource loading from self and trusted external sources.
-    response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; "  # Allow resources from the same origin by default
-        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "  # Allow external scripts from CDN
-        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "  # Allow external styles from CDN
-        "img-src 'self' https://m.media-amazon.com https://images-na.ssl-images-amazon.com; "  # Allow images from specific external sources
-        "frame-src 'self'; "  # Allow iframes from the same origin (change if external sources are needed)
-        "object-src 'none'; "  # Block all objects to prevent XSS attacks
-        "font-src 'self' https://cdnjs.cloudflare.com;"  # Allow fonts from external CDN
-    )
+    # Remove any existing X-Frame-Options set to DENY
+    response.headers.pop('X-Frame-Options', None)
 
-    # X-Frame-Options - Prevent clickjacking
+    # Allow iframes from the same origin
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
 
-    # MIME Type Sniffing - Prevent MIME type confusion
-    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # Content Security Policy (CSP)
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.paypal.com https://www.paypalobjects.com; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "img-src 'self' https://m.media-amazon.com https://images-na.ssl-images-amazon.com https://www.paypalobjects.com; "
+        "frame-src 'self' https://www.paypal.com https://docs.google.com https://drive.google.com; "
+        "media-src 'self'; "
+        "object-src 'none'; "
+        "font-src 'self' https://cdnjs.cloudflare.com;"
+    )
 
-    # Secure Cookie Flag - Ensures cookies are only sent over HTTPS
-    response.headers['Set-Cookie'] = 'Secure; HttpOnly'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Set-Cookie'] = 'Secure; HttpOnly; SameSite=Lax'
 
     return response
-
 
 # Database Models   #
 class User(db.Model):
@@ -227,10 +226,13 @@ def payment_cancelled():
     flash('Payment cancelled.', 'info')
     return redirect(url_for('cart'))
 
-@app.route('/pdfs/<filename>')
+@app.route('/pdfs/<path:filename>')
 def serve_pdf(filename):
-    # This serves the PDF from the templates/PDF directory
-    return send_from_directory(os.path.join(app.root_path, 'templates/PDF'), filename)
+    pdf_directory = os.path.join(app.root_path, 'templates', 'PDF')
+    response = send_from_directory(pdf_directory, filename, mimetype='application/pdf')
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'  # allow iframe
+    return response
+
 if __name__ == '__main__':
     with app.app_context():
         if not os.path.exists('bookstore.db'):
